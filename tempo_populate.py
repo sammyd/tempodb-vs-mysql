@@ -18,7 +18,10 @@ class Worker(Thread):
     def run(self):
         while True:
             func, args, kargs = self.tasks.get()
-            try: func(*args, **kargs)
+            try:
+                func(*args, **kargs)
+                sys.stdout.write('.')
+                sys.stdout.flush()
             except Exception, e: print e
             self.tasks.task_done()
 
@@ -39,7 +42,12 @@ class ThreadPool:
 
 def main():
     print "Starting %s" % datetime.datetime.utcnow()
-    client = Client('8ece39345db74685ac1bff751f636254', '33efe4bba03b4a97a9dffdc6bac2008c')
+    client = tempodb.Client('8ece39345db74685ac1bff751f636254', '33efe4bba03b4a97a9dffdc6bac2008c')
+
+    # Create the series
+    client.create_series('testSeries')
+    client.create_series('value1')
+    client.create_series('value2')
 
     value1_data = []
     value2_data = []
@@ -47,7 +55,7 @@ def main():
 
     # Get a threadpool together
     pool = ThreadPool(3)
-    nextStop = ts + datetime.timedelta(days=1)
+    nextStop = ts + datetime.timedelta(seconds=3600)
 
     while(ts < datetime.datetime(2005,1,1,12,0,0)):
         if(ts >= nextStop):
@@ -56,9 +64,7 @@ def main():
             pool.add_task(client.write_key, "value2", value2_data)
             value1_data = []
             value2_data = []
-            nextStop = ts + datetime.timedelta(days=1)
-            sys.stdout.write('.')
-            sys.stdout.flush()
+            nextStop = ts + datetime.timedelta(seconds=3600)
 
         # Add some new datapoints
         value1_data.append(tempodb.DataPoint(ts, float(random.random())))
