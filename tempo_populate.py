@@ -51,7 +51,7 @@ def main():
 
     value1_data = []
     value2_data = []
-    ts = datetime.datetime(2000,1,1,12,0,0)
+    ts = datetime.datetime(2004,1,1,12,0,0)
 
     # Get a threadpool together
     pool = ThreadPool(3)
