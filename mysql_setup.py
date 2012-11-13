@@ -5,14 +5,14 @@ import random
 import math
 
 print "Creating the database"
-con = mdb.connect('localhost', 'root', 'pass')
+con = mdb.connect('localhost', 'root', 'password')
 with con:
     cur = con.cursor()
     cur.execute("CREATE DATABASE IF NOT EXISTS timeseries")
     cur.close()
 
 print "Creating the table"
-con = mdb.connect('localhost', 'root', 'pass', 'timeseries')
+con = mdb.connect('localhost', 'root', 'password', 'timeseries')
 with con:
     cur = con.cursor()
     cur.execute("""CREATE TABLE IF NOT EXISTS testSeries (
@@ -26,7 +26,7 @@ with con:
 print "Starting %s" % datetime.datetime.utcnow()
 ts = datetime.datetime(2000,1,1,12,0,0)
 while(ts < datetime.datetime(2005,1,1,12,0,0)):
-    con = mdb.connect('localhost', 'root', 'pass', 'timeseries')
+    con = mdb.connect('localhost', 'root', 'password', 'timeseries')
     with con:
         cur = con.cursor()
         insertValues = []
