@@ -29,7 +29,7 @@ def get_per_week_rollup(client, year, rollup_function, verbose=False):
 def get_count(client, start, end, verbose=False):
   t = datetime.datetime.utcnow()
   d = client.read(start,end, keys=['value1'], interval="1sec", function="count")
-  elapsed = dattime.datetime.utcnow() - t
+  elapsed = datetime.datetime.utcnow() - t
   if verbose:
     print d
     print "Elapsed time: %fs" % elapsed.total_seconds()
@@ -68,7 +68,7 @@ def main(experiments):
     elapsed_time = 0
     number_queries = 0
     for year in (2000,2001,2002,2003):
-      start = datetime.datetime(year,2,01,12,00)
+      start = datetime.datetime(year,9,01,12,00)
       end   = datetime.datetime(year,11,01,12,00)
       number_queries += 1
       elapsed_time += get_count(client, start, end, True)
