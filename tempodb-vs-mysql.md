@@ -349,6 +349,8 @@ TempoDB has `count` as one of their standard rollup functions, and therefore we 
 d = client.read(start,end, keys=['value1'], interval="1sec", function="count")
 ```
 
+Here, since we're using the rollup functionality, we are actually asking the platform for more than to just count the datapoints. If we changed the interval to `1day` it would rollup all of the datapoints within the range and return the count of these newly generated datapoints. This is not per-se functionality which comes with MySQL.
+
 We ran 4 different 2-month-long periods and found that the average time required to count the number of datapoints was `16.84s`. Extending the request period suffered from the same timeout problem alluded to earlier - a problem with the python client, not the underlying platform.
 
 #### MySQL
