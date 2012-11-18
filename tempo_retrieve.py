@@ -19,7 +19,7 @@ def get_per_week_rollup(client, year, rollup_function, verbose=False):
   end = datetime.datetime(year,2,1)
 
   t = datetime.datetime.utcnow()
-  d = client.read(start,end, keys=['value1'], interval="6hour", function=rollup_function)
+  d = client.read(start,end, keys=['value1'], interval="7day", function=rollup_function)
   elapsed = datetime.datetime.utcnow() - t
 
   if verbose:
@@ -50,7 +50,7 @@ def main():
   for year in (2000,2001,2002,2003):
     elapsed_time += get_per_week_rollup(client, year, "mean", True)
     number_queries += 1
-  print "Average elapsed time: %fs" % elapsed_time / number_queries
+  print "Average elapsed time: %fs" % (elapsed_time / number_queries,)
 
 
 if __name__ == '__main__':

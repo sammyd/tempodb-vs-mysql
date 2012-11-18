@@ -31,12 +31,12 @@ def main():
   elapsed_time = 0
   number_queries = 0
   while(current_dt < datetime.datetime(2005,01,01,12,00)):
-    elapsed_time += get_datapoint_at_time(conn, current_dt)
+    elapsed_time += get_datapoint_at_time(conn, current_dt, True)
     number_queries += 1
     current_dt += datetime.timedelta(days=30)
 
   print "Average elapsed time: %f (%d queries)" % (elapsed_time / number_queries, number_queries)
 
 
-if __name__ = '__main__':
+if __name__ == '__main__':
   main()
