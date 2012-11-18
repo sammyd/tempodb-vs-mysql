@@ -321,12 +321,31 @@ There is no significant difference between the different rollup functions - simp
 
 
 #### MySQL
-__TODO__
+
+Rollups in MySQL are a little more complicated than in TempoDB. Although MySQL does offer a selection of datetime functionality within its API, a lot more work is required to create rollups. Therefore, without a significant performance hit, we split the rollup creation between python and MySQL. We use python to generate the date ranges associated with each rollup value, and then formulate a query to MySQL to retrieve that value.
+
+For example, to create a weekly rollup across between 2 dates using the mean rollup function we could do the following:
+
+```
+current_dt = start
+while current_dt < end:
+  current_end = current_dt + datetime.timedelta(days=7)
+  cur.execute("SELECT SQL_NO_CACHE AVG(value1), AVG(value2) FROM testSeries WHERE timestamp > %%s AND timestamp < %%s", (current_dt, current_end))
+  row = cur.fetchone()
+  cur.close()
+  current_dt = current_end
+```
+
+We use this methodology to create the same experiment as with the TempoDB rollup section. Calculating those same rollups (weekly means for one month) takes an average of `35.07s`.
+
+The MySQL aggregate functions are used here to calculate the rollup values, and as such we have a selection available including `MEAN`, `SUM`, `MAX`, `MIN`, `STD` and `VARIANCE` - much the same as those offered by TempoDB.
 
 ### Datapoint count
 
+__TODO__ *Expand this some more, with a count between 2 dates*
+
 #### TempoDB
-TempoDB has `count` as one of their standard rollup functions, and therefore we can use the same code a we did before to establish the count.
+TempoDB has `count` as one of their standard rollup functions, and therefore we can use the same code as we did before to establish the count.
 
 #### MySQL
 Pre-indexing, asking MySQL to count the number of rows required a full-table scan. This took in excess of 3 minutes, however, once the index has been established, this information is pre-calculated (as part of the index). Therefore the count is an instantly accessible value.
@@ -338,4 +357,4 @@ Having seen how well TempoDB compares with MySQL with a given dataset, I'm intri
 
 To test these questions we need to increase the number of datapoints massively.
 
-__TODO__
+__TODO__ *I'm interested in this - it'll take a while to create the datapoints, but once it's done, the same retrieval code will work*.
