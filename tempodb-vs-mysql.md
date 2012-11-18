@@ -342,13 +342,26 @@ The MySQL aggregate functions are used here to calculate the rollup values, and 
 
 ### Datapoint count
 
-__TODO__ *Expand this some more, with a count between 2 dates*
-
 #### TempoDB
-TempoDB has `count` as one of their standard rollup functions, and therefore we can use the same code as we did before to establish the count.
+TempoDB has `count` as one of their standard rollup functions, and therefore we can use the same code as we did before to establish the count:
+
+```
+d = client.read(start,end, keys=['value1'], interval="1sec", function="count")
+```
+
+We ran 4 different 2-month-long periods and found that the average time required to count the number of datapoints was `16.84s`. Extending the request period suffered from the same timeout problem alluded to earlier - a problem with the python client, not the underlying platform.
 
 #### MySQL
 Pre-indexing, asking MySQL to count the number of rows required a full-table scan. This took in excess of 3 minutes, however, once the index has been established, this information is pre-calculated (as part of the index). Therefore the count is an instantly accessible value.
+
+To count the number of datapoints within a given period, a simple query such as the following can be used:
+
+```
+cur.execute("SELECT COUNT(*) FROM testSeries WHERE timestamp > %s AND timestamp < %s", (start, end))
+row = cur.fetchone()
+```
+
+Repeating the same experiment we performed with TempoDB (counting the number of datapoints in 4 distinct 2-month periods) took an average of `12.00s`.
 
 
 ### Scalability
