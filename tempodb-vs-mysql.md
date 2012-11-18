@@ -222,7 +222,7 @@ def get_datapoint_at_time(client, time, verbose=False):
   return elapsed.total_seconds()
 ```
 
-Repeating this across a range of 61 different time instants yielded an average data retrieval time of `0.6858s`.
+Repeating this across a range of 61 different time instants yielded an average data retrieval time of `0.2469s`.
 
 #### MySQL
 
@@ -297,12 +297,12 @@ We again run this over 61 distinct time instants, which yields an average datapo
 Rollups are the ability to summarise the datapoints over a given temporal range - e.g. the average/max value of a series in a given month. This is particularly useful in timeseries, since it is often these trends which are of high importance when investigating the data.
 
 #### TempoDB
-TempoDB has built-in support for common rollup functions - and as such access to them is pretty simple. For example, the following method will take a client, and a given rollup function and return the rolled-up across all the weeks in a given year:
+TempoDB has built-in support for common rollup functions - and as such access to them is pretty simple. For example, the following method will take a client, and a given rollup function and return the rolled-up across the weeks in the first month of a given year:
 
 ```
 def get_per_week_rollup(client, year, rollup_function, verbose=False):
   start = datetime.datetime(year,1,1)
-  end = datetime.datetime(year+1,1,1)
+  end = datetime.datetime(year,2,1)
 
   t = datetime.datetime.utcnow()
   d = client.read(start,end, keys=['value1'], interval="7day", function=rollup_function)
@@ -315,6 +315,11 @@ def get_per_week_rollup(client, year, rollup_function, verbose=False):
 
 This can be used with rollup functions such as `mean`, `sum`, `max`, `min`, and `stddev`.
 
+Running this with 4 different input years yields an average retrieval time of `8.53s` - i.e. to rollup a month's worth of weeks takes eight and a half seconds. That is finding 4 sets of 800,000 data points and finding their mean. Unfortunately, increasing the number of rollups requested causes a problem with the python client in that it thinks an API request has timed out, and resends it. I don't think this would be difficult to fix, and it'll be worth an option in the client itself.
+
+There is no significant difference between the different rollup functions - simply passing a different string to the client (i.e. a slightly different API call) is enough to return the newly calculated dataset.
+
+
 #### MySQL
 __TODO__
 
@@ -324,4 +329,13 @@ __TODO__
 TempoDB has `count` as one of their standard rollup functions, and therefore we can use the same code a we did before to establish the count.
 
 #### MySQL
+Pre-indexing, asking MySQL to count the number of rows required a full-table scan. This took in excess of 3 minutes, however, once the index has been established, this information is pre-calculated (as part of the index). Therefore the count is an instantly accessible value.
+
+
+### Scalability
+
+Having seen how well TempoDB compares with MySQL with a given dataset, I'm intrigued to find how the two systems scale. For example - does retrieving a specified number of datapoints remain constant with the size of the database? What happens when the MySQL index is too big to hold in memory?
+
+To test these questions we need to increase the number of datapoints massively.
+
 __TODO__
