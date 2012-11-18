@@ -225,7 +225,72 @@ def get_datapoint_at_time(client, time, verbose=False):
 Repeating this across a range of 61 different time instants yielded an average data retrieval time of `0.6858s`.
 
 #### MySQL
-__TODO__
+
+Finding a specific datapoint in MySQL is bread-and-butter SQL syntax:
+
+```
+mysql> SELECT * FROM testSeries WHERE timestamp = "2000-10-01 12:00:00";
++---------------------+-------------------+--------+
+| timestamp           | value1            | value2 |
++---------------------+-------------------+--------+
+| 2000-10-01 12:00:00 | 0.989892234959475 | 660567 |
++---------------------+-------------------+--------+
+1 row in set (6 min 0.78 sec)
+```
+
+As you can see this takes a very long time - 6 minutes to find one record - compared to `0.6s` with TempoDB. However, this might not be a very fair test. This MySQL operation has to perform an complete table scan - in our case over 150 million rows.
+
+In reality, if you were to use MySQL for this use case then you would add an index to the table based on the timestamp. This will speed up the searching, at the cost of increased write times and disk usage.
+
+```
+mysql> CREATE INDEX timestamp_index ON testSeries(timestamp);
+Query OK, 0 rows affected (27 min 52.82 sec)
+Records: 0  Duplicates: 0  Warnings: 0
+```
+
+This process increased the MySQL data file from 6.7GB to 9.1GB - a 35% overhead on disk usage. However, it does speed the datapoint retrieval up significantly:
+
+```
+mysql> SELECT * FROM testSeries WHERE timestamp = "2000-10-01 12:00:00";
++---------------------+-------------------+--------+
+| timestamp           | value1            | value2 |
++---------------------+-------------------+--------+
+| 2000-10-01 12:00:00 | 0.989892234959475 | 660567 |
++---------------------+-------------------+--------+
+1 row in set (0.06 sec)
+```
+
+You can see that MySQL is using the newly created index with an `EXPLAIN` query:
+
+```
+mysql> EXPLAIN SELECT * FROM testSeries WHERE timestamp = "2000-10-01 12:00:00";
++----+-------------+------------+------+-----------------+-----------------+---------+-------+------+-------+
+| id | select_type | table      | type | possible_keys   | key             | key_len | ref   | rows | Extra |
++----+-------------+------------+------+-----------------+-----------------+---------+-------+------+-------+
+|  1 | SIMPLE      | testSeries | ref  | timestamp_index | timestamp_index | 4       | const |    1 |       |
++----+-------------+------------+------+-----------------+-----------------+---------+-------+------+-------+
+1 row in set (0.03 sec)
+```
+
+Now we've added an index we can repeat the same experiment we used for single datapoints with TempoDB. The following code is the MySQL equivalent of that used with TempoDB:
+
+```
+def get_datapoint_at_time(conn, time, verbose=False):
+  t = datetime.datetime.utcnow()
+  cur = conn.cursor()
+  cur.execute("SELECT * FROM testSeries WHERE timestamp = %s;", (time,))
+  row = cur.fetchone()
+  cur.close()
+  elapsed = datetime.datetime.utcnow() - t
+
+  if verbose:
+    print "value1: %f" % row[1]
+    print "value2: %d" % row[2]
+    print "Elapsed time: %fs" % elapsed.total_seconds()
+  return elapsed.total_seconds()
+```
+
+We again run this over 61 distinct time instants, which yields an average datapoint retrieval time of `0.0281s`.
 
 ### Rollups
 
