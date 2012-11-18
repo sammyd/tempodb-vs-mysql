@@ -49,12 +49,23 @@ def get_per_week_rollup(conn, year, rollup_function="AVG", verbose=False):
     print "Elapsed time: %fs" % elapsed.total_seconds()
   return elapsed.total_seconds()
 
+def get_count(conn, start, end, verbose=False):
+  t = datetime.datetime.utcnow()
+  cur = conn.cursor()
+  cur.execute("SELECT COUNT(*) FROM testSeries WHERE timestamp > %s AND timestamp < %s", (start, end))
+  row = cur.fetchone()
+  elapsed = dattime.datetime.utcnow() - t
+  if verbose:
+    print row
+    print "Elapsed time: %fs" % elapsed.total_seconds()
+  return elapsed.total_seconds()
 
-def main():
+
+def main(experiments):
   conn = get_connection()
 
   # Specific datapoints
-  if(1==1):
+  if(experiments["specific"]):
     print "Specific datapoints"
     current_dt = datetime.datetime(2000,01,01,12,00)
     elapsed_time = 0
@@ -67,14 +78,28 @@ def main():
     print "Average elapsed time: %f (%d queries)" % (elapsed_time / number_queries, number_queries)
 
   # Weekly rollups
-  print "Weekly Rollup :: Mean"
-  elapsed_time = 0
-  number_queries = 0
-  for year in (2000,2001,2002,2003):
-    elapsed_time += get_per_week_rollup(conn, year, "AVG", False)
-    number_queries += 1
-  print "Average elapsed time: %fs" % (elapsed_time / number_queries,)
+  if(experiments["rollup"]):
+    print "Weekly Rollup :: Mean"
+    elapsed_time = 0
+    number_queries = 0
+    for year in (2000,2001,2002,2003):
+      elapsed_time += get_per_week_rollup(conn, year, "AVG", False)
+      number_queries += 1
+    print "Average elapsed time: %fs" % (elapsed_time / number_queries,)
+
+  # Count
+  if(experiments["count"]):
+    print "Datapoint counts"
+    elapsed_time = 0
+    number_queries = 0
+    for year in (2000,2001,2002,2003):
+      start = datetime.datetime(year,2,01,12,00)
+      end   = datetime.datetime(year,11,01,12,00)
+      number_queries += 1
+      elapsed_time += get_count(conn, start, end, True)
+    print "Average elapsed time: %fs" % (elapsed_time / number_queries,)
 
 
 if __name__ == '__main__':
-  main()
+  experiments = { "specific" : False, "rollup" : False, "count" : True }
+  main(experiments)
