@@ -2,62 +2,28 @@ import tempodb
 import random
 import datetime
 import math
-from Queue import Queue
-from threading import Thread
-import sys
+import utils.threading as threading
+
+# Set the start and end times here. This is lazy.
+start_time = datetime.datetime(2010, 1, 1, 12, 0, 1)
+end_time   = datetime.datetime(2015, 1, 1, 12, 0, 0)
 
 
-class Worker(Thread):
-    """Thread executing tasks from a given tasks queue"""
-    def __init__(self, tasks):
-        Thread.__init__(self)
-        self.tasks = tasks
-        self.daemon = True
-        self.start()
-
-    def run(self):
-        while True:
-            func, args, kargs = self.tasks.get()
-            try:
-                func(*args, **kargs)
-                sys.stdout.write('.')
-                sys.stdout.flush()
-            except Exception, e: print e
-            self.tasks.task_done()
-
-class ThreadPool:
-    """Pool of threads consuming tasks from a queue"""
-    def __init__(self, num_threads):
-        self.tasks = Queue(num_threads)
-        for _ in range(num_threads): Worker(self.tasks)
-
-    def add_task(self, func, *args, **kargs):
-        """Add a task to the queue"""
-        self.tasks.put((func, args, kargs))
-
-    def wait_completion(self):
-        """Wait for completion of all the tasks in the queue"""
-        self.tasks.join()
-
-
-def main():
+def main(t_start, t_end, no_threads=3):
     print "Starting %s" % datetime.datetime.utcnow()
-    client = tempodb.Client('8ece39345db74685ac1bff751f636254', '33efe4bba03b4a97a9dffdc6bac2008c')
 
-    # Create the series
-    client.create_series('testSeries')
-    client.create_series('value1')
-    client.create_series('value2')
+    # Create the client
+    client = tempodb.Client('8ece39345db74685ac1bff751f636254', '33efe4bba03b4a97a9dffdc6bac2008c')
 
     value1_data = []
     value2_data = []
-    ts = datetime.datetime(2010,1,1,12,0,1)
+    ts = t_start
 
     # Get a threadpool together
-    pool = ThreadPool(3)
+    pool = threading.ThreadPool(no_threads)
     nextStop = ts + datetime.timedelta(seconds=3600)
 
-    while(ts < datetime.datetime(2015,1,1,12,0,0)):
+    while(ts < t_end):
         if(ts >= nextStop):
             # We have enough points to submit
             pool.add_task(client.write_key, "value1", value1_data)
@@ -84,8 +50,6 @@ def main():
 
     print "done %s" % datetime.datetime.utcnow()
 
+
 if __name__ == '__main__':
-    main()
-
-
-
+    main(start_time, end_time, 3)
