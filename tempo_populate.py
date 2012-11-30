@@ -2,7 +2,7 @@ import tempodb
 import random
 import datetime
 import math
-import utils.threading as threading
+import utils.threadpool as tp
 
 # Set the start and end times here. This is lazy.
 start_time = datetime.datetime(2010, 1, 1, 12, 0, 1)
@@ -20,7 +20,7 @@ def main(t_start, t_end, no_threads=3):
     ts = t_start
 
     # Get a threadpool together
-    pool = threading.ThreadPool(no_threads)
+    pool = tp.ThreadPool(no_threads)
     nextStop = ts + datetime.timedelta(seconds=3600)
 
     while(ts < t_end):

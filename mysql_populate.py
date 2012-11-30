@@ -2,11 +2,11 @@ import MySQLdb as mdb
 import datetime
 import random
 import math
-import utils.threading as threading
+import utils.threadpool as tp
 
 # Set the start and end times here. This is lazy.
-start_date = datetime.datetime(2005, 1, 1, 12, 0, 1)
-end_date   = datetime.datetime(2010, 1, 1, 12, 0, 0)
+start_date = datetime.datetime(2010, 1, 1, 12, 0, 1)
+end_date   = datetime.datetime(2015, 1, 1, 12, 0, 0)
 
 
 def prepare_database():
@@ -45,7 +45,7 @@ def main(t_start, t_end, no_threads):
     print "Starting %s" % datetime.datetime.utcnow()
 
     # Let's create a threadpool
-    pool = threading.Threadpool(no_threads)
+    pool = tp.ThreadPool(no_threads)
 
     ts = t_start
     while(ts < t_end):
