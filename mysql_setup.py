@@ -24,8 +24,8 @@ with con:
 
 
 print "Starting %s" % datetime.datetime.utcnow()
-ts = datetime.datetime(2000,1,1,12,0,0)
-while(ts < datetime.datetime(2005,1,1,12,0,0)):
+ts = datetime.datetime(2005,1,1,12,0,1)
+while(ts < datetime.datetime(2010,1,1,12,0,0)):
     con = mdb.connect('localhost', 'root', 'password', 'timeseries')
     with con:
         cur = con.cursor()

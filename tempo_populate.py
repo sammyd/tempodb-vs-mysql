@@ -51,13 +51,13 @@ def main():
 
     value1_data = []
     value2_data = []
-    ts = datetime.datetime(2004,1,1,12,0,0)
+    ts = datetime.datetime(2010,1,1,12,0,1)
 
     # Get a threadpool together
     pool = ThreadPool(3)
     nextStop = ts + datetime.timedelta(seconds=3600)
 
-    while(ts < datetime.datetime(2005,1,1,12,0,0)):
+    while(ts < datetime.datetime(2015,1,1,12,0,0)):
         if(ts >= nextStop):
             # We have enough points to submit
             pool.add_task(client.write_key, "value1", value1_data)

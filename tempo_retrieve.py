@@ -76,5 +76,5 @@ def main(experiments):
 
 
 if __name__ == '__main__':
-  experiments = { "specific" : False, "rollup" : False, "count" : True }
+  experiments = { "specific" : True, "rollup" : True, "count" : True }
   main(experiments)

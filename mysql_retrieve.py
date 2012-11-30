@@ -52,7 +52,7 @@ def get_per_week_rollup(conn, year, rollup_function="AVG", verbose=False):
 def get_count(conn, start, end, verbose=False):
   t = datetime.datetime.utcnow()
   cur = conn.cursor()
-  cur.execute("SELECT COUNT(*) FROM testSeries WHERE timestamp > %s AND timestamp < %s", (start, end))
+  cur.execute("SELECT SQL_NO_CACHE COUNT(*) FROM testSeries WHERE timestamp > %s AND timestamp < %s", (start, end))
   row = cur.fetchone()
   elapsed = datetime.datetime.utcnow() - t
   if verbose:
